@@ -13,16 +13,22 @@ const port = process.env.PORT || 3400;
 app.use(express.static(publicDirectoryPath));
 
 io.on('connection',  (socket) => {
-    console.log("connection established");
+    console.log("New WebSocket connection");
     
-    socket.emit('welcomeMsg', "Welcome bro");
-    socket.broadcast.emit('welcomeMsg', "new user joined")
+    socket.emit('message', "Welcome");
+    
+    socket.broadcast.emit('message', "A new user has joined")
+    
     socket.on("sendMsg", (msg) => {
-        io.emit('welcomeMsg',msg)
+        io.emit('message',msg)
+    })
+
+    socket.on('sendLocation', (coordinates) => {
+        io.emit('message', `https://google.com/maps?q=${coordinates.latitude},${coordinates.longitude}`)
     })
 
     socket.on('disconnect', () => {
-        io.emit('welcomeMsg', "a  user left");
+        io.emit('message', "A user has left");
     })
 })
 
