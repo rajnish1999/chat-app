@@ -27,28 +27,32 @@ io.on('connection',  (socket) => {
 
         socket.join(user.room);
 
-        socket.emit('message', generateMessage('Welcome!'));
-        socket.broadcast.to(user.room).emit('message', generateMessage(`${user.username} has joined!`));
+        socket.emit('message', generateMessage('Admin','Welcome!'));
+        socket.broadcast.to(user.room).emit('message', generateMessage('Admin',`${user.username} has joined!`));
 
         callback();
     })
     
     socket.on("sendMsg", (msg, callback) => {
+        const user = getUser(socket.id);
+        
         const filter = new Filter();
-    
+
         if(filter.isProfane(msg)) {
             return callback('Profanity is not allowed')
         }
-        // callback();
-        io.emit('message',generateMessage(msg));
+        
+        io.to(user.room).emit('message',generateMessage(user.username, msg));
         callback();
+
     })
 
     socket.on('sendLocation', (coordinates, callback) => {
-    
-        io.emit('locationMessage', generateLocationMessage(`https://google.com/maps?q=${coordinates.latitude},${coordinates.longitude}`));
+        const user = getUser(socket.id);
+
+            io.to(user.room).emit('locationMessage', generateLocationMessage(user.username, `https://google.com/maps?q=${coordinates.latitude},${coordinates.longitude}`));
         
-        callback();
+            callback();
     })
 
     socket.on('disconnect', () => {
